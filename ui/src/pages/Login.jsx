@@ -1,20 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { UserContext } from '../Context/UserContext';
+import { useNavigate } from 'react-router-dom';
+import {
+	signInWithEmailAndPassword,
+	onAuthStateChanged,
+	signOut,
+	setPersistence,
+	browserLocalPersistence,
+} from 'firebase/auth';
 
 const Login = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const signIn = (e) => {
-		e.preventDefault();
-		signInWithEmailAndPassword(auth, email, password)
-			.then((userCredential) => {
-				console.log(userCredential);
+	const userContext = useContext(UserContext);
+	const { user, setUser } = userContext;
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		setPersistence(auth, browserLocalPersistence)
+			.then(() => {
+				const unsubscribe = onAuthStateChanged(auth, (user) => {
+					if (user) {
+						console.log('User is signed in:', user);
+						setUser(user);
+					} else {
+						console.log('User is signed out');
+						setUser(null);
+					}
+				});
+
+				return () => {
+					unsubscribe();
+				};
 			})
 			.catch((error) => {
-				console.log(error);
+				console.log('Error setting persistence:', error);
 			});
+	}, []);
+
+	const signIn = async (e) => {
+		e.preventDefault();
+		try {
+			await signInWithEmailAndPassword(auth, email, password);
+			console.log('User is signed in:', user);
+
+			navigate('/');
+		} catch (error) {
+			console.log(error);
+		}
 	};
+
 	return (
 		<div className="login-container">
 			<form onSubmit={signIn}>

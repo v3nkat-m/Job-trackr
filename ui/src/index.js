@@ -1,41 +1,33 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import './css/index.css';
-import App from './App';
+import Home from './pages/Home';
 import {
-	createBrowserRouter,
-	RouterProvider,
+	BrowserRouter as Router,
+	Routes,
+	Route,
 	Navigate,
 } from 'react-router-dom';
 import SignUp from './pages/Signup';
 import Login from './pages/Login';
 import ChangePassword from './pages/ChangePassword';
+import { UserProvider } from './Context/UserContext';
+import PrivateRoute from './components/PrivateRoute';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <App />,
-	},
-	{
-		path: '/auth/login',
-		element: <Login />,
-	},
-	{ path: '/auth/signup', element: <SignUp /> },
-	{
-		path: '/auth/change-password',
-		element: <ChangePassword />,
-	},
-	{
-		path: '*',
-		element: <Navigate replace to="/" />,
-	},
-]);
 root.render(
 	<React.StrictMode>
-		<RouterProvider router={router}>
-			<App />
-		</RouterProvider>
+		<UserProvider>
+			<Router>
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/auth/login" element={<Login />} />
+					<Route path="/auth/signup" element={<SignUp />} />
+					<Route path="/auth/change-password" element={<ChangePassword />} />
+					<Route path="*" element={<Navigate replace to="/" />} />
+				</Routes>
+			</Router>
+		</UserProvider>
 	</React.StrictMode>
 );
